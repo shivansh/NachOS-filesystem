@@ -14,6 +14,9 @@ code/test/testyield
 code/test/vectorsum
 code/threads/nachos
 code/userprog/nachos
+code/filesys/nachos
+
+code/filesys/DISK
 
 # Exclude log files
 debug.log
