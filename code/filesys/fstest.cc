@@ -173,12 +173,55 @@ void
 PerformanceTest()
 {
     printf("Starting file system performance test:\n");
-    stats->Print();
+    // stats->Print();
     FileWrite();
     FileRead();
     if (!fileSystem->Remove(FileName)) {
         printf("Perf test: unable to remove %s\n", FileName);
         return;
     }
-    stats->Print();
+    // stats->Print();
+}
+
+//----------------------------------------------------------------------
+// ConcurrentPrint
+//      Print the contents of the Nachos file "name" using
+//      two threads such that the seek position of one thread
+//      doesn't affect the other while reading.
+//----------------------------------------------------------------------
+void
+ConcurrentPrint(int which)
+{
+    OpenFile* openFile;
+    int       i, amountRead;
+    char*     buffer;
+
+    if ((openFile = fileSystem->Open(FileName)) == NULL) {
+        printf("ConcurrentPrint: unable to open file %s\n", FileName);
+        return;
+    }
+
+    buffer = new char[TransferSize];
+    while ((amountRead = openFile->Read(buffer, TransferSize)) > 0)
+        for (i = 0; i < amountRead; i++) {
+            printf("Thread %d:%c", which, buffer[i]);
+            currentThread->YieldCPU();
+        }
+    delete[] buffer;
+
+    delete openFile;  // close the Nachos file
+    return;
+}
+
+//----------------------------------------------------------------------
+// ConcurrentOps
+//      Routines to check support for concurrent operations
+//----------------------------------------------------------------------
+void
+ConcurrencyTest()
+{
+    printf("Starting file system concurrency test:\n");
+    NachOSThread* t = new NachOSThread("forked thread", GET_NICE_FROM_PARENT);
+    t->ThreadFork(ConcurrentPrint, 1);
+    ConcurrentPrint(0);
 }
