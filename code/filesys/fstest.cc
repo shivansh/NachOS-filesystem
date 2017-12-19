@@ -195,18 +195,19 @@ ConcurrentPrint(int which)
     OpenFile* openFile;
     int       i, amountRead;
     char*     buffer;
+    char*     testfile = "tiny";
 
-    if ((openFile = fileSystem->Open(FileName)) == NULL) {
-        printf("ConcurrentPrint: unable to open file %s\n", FileName);
+    if ((openFile = fileSystem->Open(testfile)) == NULL) {
+        printf("ConcurrentPrint: unable to open file %s\n", testfile);
         return;
     }
 
-    buffer = new char[TransferSize];
-    while ((amountRead = openFile->Read(buffer, TransferSize)) > 0)
-        for (i = 0; i < amountRead; i++) {
-            printf("Thread %d:%c", which, buffer[i]);
-            currentThread->YieldCPU();
-        }
+    buffer = new char;
+    // Read a character at a time and display.
+    while ((amountRead = openFile->Read(buffer, 1)) > 0) {
+        printf("Thread %d:%c\n", which, buffer[0]);
+        currentThread->YieldCPU();
+    }
     delete[] buffer;
 
     delete openFile;  // close the Nachos file
